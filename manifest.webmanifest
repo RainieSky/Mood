@@ -1,7 +1,7 @@
 {
   "name": "映心 情绪数字分身",
   "short_name": "映心",
-  "description": "通过触摸、呼吸、语音与手机动作回应用户的移动端情绪数字分身。",
+  "description": "支持触摸、呼吸、文字聊天、语音输入与手机动作的情绪数字分身。",
   "lang": "zh-CN",
   "start_url": "./index.html",
   "display": "standalone",

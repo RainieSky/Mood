@@ -272,10 +272,82 @@
       </section>
     </section>
 
+    <section class="view view-chat" data-view="chat" aria-labelledby="chat-title">
+      <header class="subpage-header">
+        <button class="back-home icon-button" aria-label="返回分身">
+          <svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"></path></svg>
+        </button>
+        <span>和小映聊聊</span>
+        <button class="icon-button" id="clear-chat" aria-label="清空本次聊天">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"></path></svg>
+        </button>
+      </header>
+
+      <div class="chat-heading">
+        <div>
+          <p class="eyebrow">不用先想好怎么说</p>
+          <h1 id="chat-title">说一点，<br>也可以只说一点</h1>
+        </div>
+        <div class="chat-presence" aria-label="小映正在陪伴">
+          <span class="chat-mini-face" aria-hidden="true"><i></i><i></i></span>
+          <small>在这里</small>
+        </div>
+      </div>
+
+      <div class="chat-privacy-strip">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V8a5 5 0 0 1 10 0v2M5 10h14v10H5z"></path></svg>
+        <span>对话只留在当前页面，刷新即清除</span>
+      </div>
+
+      <div class="chat-thread" id="chat-thread" role="log" aria-live="polite" aria-label="与小映的聊天记录">
+        <div class="chat-day-label">现在</div>
+        <article class="chat-message is-assistant">
+          <span class="chat-avatar" aria-hidden="true">映</span>
+          <div class="chat-bubble">
+            <p>我在这里。你可以说说刚刚发生了什么，也可以只告诉我现在想被怎么陪着。</p>
+            <small>小映 · 刚刚</small>
+          </div>
+        </article>
+      </div>
+
+      <div class="chat-quick" aria-label="快捷话题">
+        <button type="button" data-chat-prompt="今天有点累">今天有点累</button>
+        <button type="button" data-chat-prompt="我睡不着">我睡不着</button>
+        <button type="button" data-chat-prompt="陪我呼吸">陪我呼吸</button>
+        <button type="button" data-chat-prompt="夸夸我">夸夸我</button>
+      </div>
+
+      <div class="chat-voice-row">
+        <span id="chat-voice-status" role="status">语音输入不会保存录音，是否联网由浏览器决定</span>
+        <button type="button" class="read-toggle" id="toggle-read-aloud" aria-pressed="false">
+          朗读 关
+        </button>
+      </div>
+
+      <div class="chat-composer">
+        <button type="button" class="chat-mic" id="chat-mic" aria-label="开始语音输入">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"></path></svg>
+          <span>语音</span>
+        </button>
+        <form class="chat-form" id="chat-form">
+          <label class="sr-only" for="chat-input">给小映发送消息</label>
+          <input id="chat-input" name="message" type="text" maxlength="280" autocomplete="off" placeholder="写一点此刻想说的…">
+          <button type="submit" class="chat-send" aria-label="发送消息">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 4 16 8-16 8 3-8-3-8Z"></path><path d="M7 12h13"></path></svg>
+          </button>
+        </form>
+      </div>
+      <p class="chat-disclaimer">小映使用本地回应规则，不是真人或心理医生。若你可能有伤害自己的风险，请立即联系身边可信任的人、学校心理中心，或拨打 120 / 110 寻求紧急帮助。</p>
+    </section>
+
     <nav class="tabbar" aria-label="主要页面">
       <button class="tab is-active" data-target="home" aria-label="分身">
         <svg viewBox="0 0 24 24"><path d="M12 21c5 0 8-3 8-8 0-4-2.5-7-6-8.5V3H10v1.5C6.5 6 4 9 4 13c0 5 3 8 8 8Z"></path><path d="M9 13h.01M15 13h.01M10 16c1.3 1 2.7 1 4 0"></path></svg>
         <span>分身</span>
+      </button>
+      <button class="tab" data-target="chat" aria-label="和小映聊聊">
+        <svg viewBox="0 0 24 24"><path d="M5 5h14v10H9l-4 4V5Z"></path><path d="M8.5 9h7M8.5 12h4.5"></path></svg>
+        <span>聊聊</span>
       </button>
       <button class="tab" data-target="breath" aria-label="呼吸">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2"></path></svg>
@@ -319,6 +391,7 @@
     </div>
     <div class="settings-copy">
       <p>“映心”是一个移动端交互原型。它把触摸、语音、手机动作与呼吸练习转化为数字分身的状态变化，用于探索“互动本身也能帮助调节”的体验闭环。</p>
+      <p>“聊聊”中的文字与语音转写只存在于当前页面，不会写入互动记录或上传到本项目服务器。语音识别是否联网由浏览器决定，页面不会保存录音。</p>
       <p>原型中的状态是规则与演示数据，不构成心理诊断或医疗建议。如果持续感到难以承受，应联系可信任的人或专业支持。</p>
     </div>
     <div class="settings-row">

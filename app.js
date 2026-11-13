@@ -98,6 +98,11 @@
   let breathingTimer = 0;
   let speechRecognition = null;
   let speechFallbackTimer = 0;
+  let chatVoiceRecognition = null;
+  let chatVoiceTimer = 0;
+  let chatVoiceTimedOut = false;
+  let chatReadAloud = false;
+  let chatTurn = 0;
   let motionEnabled = false;
   let lastShake = 0;
   let activeRhythm = [4, 2, 6];
@@ -116,6 +121,11 @@
   const voiceStatus = $("#voice-status");
   const voiceVisual = $("#voice-visual");
   const startVoiceButton = $("#start-voice");
+  const chatThread = $("#chat-thread");
+  const chatForm = $("#chat-form");
+  const chatInput = $("#chat-input");
+  const chatMic = $("#chat-mic");
+  const chatVoiceStatus = $("#chat-voice-status");
   const toast = $("#toast");
 
   function saveState() {
@@ -325,6 +335,10 @@
       tab.setAttribute("aria-current", selected ? "page" : "false");
     });
     if (name !== "breath") stopBreathing(false);
+    if (name !== "chat") {
+      stopChatVoice();
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    }
     if (syncHash && location.hash !== `#${name}`) {
       history.replaceState(null, "", `#${name}`);
     }
@@ -458,6 +472,339 @@
       startVoiceButton.disabled = false;
       startVoiceButton.textContent = "再体验一次";
       voiceStatus.textContent = "当前环境未启动语音识别，请直接用手势或标记完成体验。";
+    }
+  }
+
+  function chatTimeLabel() {
+    return new Intl.DateTimeFormat("zh-CN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    }).format(new Date());
+  }
+
+  function scrollChatToBottom() {
+    window.requestAnimationFrame(() => {
+      chatThread.scrollTop = chatThread.scrollHeight;
+    });
+  }
+
+  function createChatAction(label, action) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "chat-action";
+    button.dataset.chatAction = action;
+    button.textContent = label;
+    button.addEventListener("click", () => {
+      if (action === "breath") {
+        showView("breath");
+        showToast("先只做三轮，随时可以停");
+      } else if (action === "pet") {
+        performPet("button");
+        appendChatMessage("assistant", "刚刚那一下，它收到了。你也可以继续在这里说，或者什么都不说。");
+      } else if (action === "checkin") {
+        showView("home");
+        showToast("回到首页选择一个大致状态即可");
+      }
+    });
+    return button;
+  }
+
+  function appendChatMessage(role, text, options = {}) {
+    const article = document.createElement("article");
+    article.className = `chat-message is-${role}`;
+
+    if (role === "assistant") {
+      const avatar = document.createElement("span");
+      avatar.className = "chat-avatar";
+      avatar.setAttribute("aria-hidden", "true");
+      avatar.textContent = "映";
+      article.appendChild(avatar);
+    }
+
+    const bubble = document.createElement("div");
+    bubble.className = "chat-bubble";
+    const paragraph = document.createElement("p");
+    paragraph.textContent = text;
+    bubble.appendChild(paragraph);
+
+    if (Array.isArray(options.actions) && options.actions.length) {
+      const actionRow = document.createElement("div");
+      actionRow.className = "chat-actions";
+      options.actions.forEach(([label, action]) => {
+        actionRow.appendChild(createChatAction(label, action));
+      });
+      bubble.appendChild(actionRow);
+    }
+
+    const time = document.createElement("small");
+    time.textContent = `${role === "assistant" ? "小映" : "你"} · ${chatTimeLabel()}`;
+    bubble.appendChild(time);
+    article.appendChild(bubble);
+    chatThread.appendChild(article);
+    scrollChatToBottom();
+    return article;
+  }
+
+  function appendTypingIndicator() {
+    const article = document.createElement("article");
+    article.className = "chat-message is-assistant";
+    article.setAttribute("aria-label", "小映正在回复");
+    const avatar = document.createElement("span");
+    avatar.className = "chat-avatar";
+    avatar.setAttribute("aria-hidden", "true");
+    avatar.textContent = "映";
+    const bubble = document.createElement("div");
+    bubble.className = "chat-bubble typing-bubble";
+    bubble.append(document.createElement("i"), document.createElement("i"), document.createElement("i"));
+    article.append(avatar, bubble);
+    chatThread.appendChild(article);
+    scrollChatToBottom();
+    return article;
+  }
+
+  function speakChatReply(text) {
+    if (!chatReadAloud || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "zh-CN";
+    utterance.rate = 0.96;
+    utterance.pitch = 1.02;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function buildChatReply(text) {
+    const normalized = text.replace(/\s/g, "");
+    chatTurn += 1;
+
+    if (/自杀|不想活|伤害自己|结束生命|死了算了|活不下去/.test(normalized)) {
+      applyChange({ connection: 8, expression: 4, stress: 2 }, "soft", "tired");
+      return {
+        text: "这句话不能轻轻略过。请先离可能伤害自己的物品远一点，联系一个现在能来到你身边的人。如果你觉得自己可能马上伤害自己，请立即拨打 120 或 110，或前往最近的急诊。你现在身边有人吗？",
+        actions: []
+      };
+    }
+
+    if (/呼吸|喘不过|冷静|放松/.test(normalized)) {
+      applyChange({ connection: 5, expression: 7, stress: -5 }, "soft", "calm");
+      return {
+        text: "可以。我们不把它做成任务，只做三轮。光团变亮时吸气，变小的时候呼气，任何时候都可以停。",
+        actions: [["一起做三轮", "breath"]]
+      };
+    }
+
+    if (/睡不着|失眠|半夜|睡不/.test(normalized)) {
+      applyChange({ energy: -2, expression: 5, connection: 5 }, "soft", "tired");
+      return {
+        text: "越要求自己马上睡着，身体有时越清醒。先把目标改成“让身体少一点刺激”：调暗屏幕，做一轮 3·3·3 呼吸，只做三次。今晚不需要把明天也解决。",
+        actions: [["试试 3·3·3", "breath"]]
+      };
+    }
+
+    if (/累|烦|难过|压力|焦虑|崩溃|委屈|不想动/.test(normalized)) {
+      applyChange({ connection: 7, expression: 5, stress: -3 }, "soft", "tired");
+      const prompts = [
+        "听起来今天已经占了你不少力气。先不急着分析原因。此刻更像是身体累、脑子停不下来，还是一件事一直卡着？",
+        "我先不劝你振作。可以把这件事压缩成一句最难受的部分，也可以只说“现在很乱”。你更想被听着，还是想做一个小动作？",
+        "这份累是真实占地方的。我们先不追求解决全部，只找一件能让接下来十分钟轻一点的事。喝水、坐着、还是让我陪你呼吸？"
+      ];
+      return {
+        text: prompts[(chatTurn - 1) % prompts.length],
+        actions: [["陪我呼吸", "breath"], ["摸摸小映", "pet"]]
+      };
+    }
+
+    if (/不想说|不知道说什么|没话说|说不清/.test(normalized)) {
+      return {
+        text: "那就不用说清楚。你可以只选一个动作，我看着你做；也可以在这里停半分钟，什么也不用发生。",
+        actions: [["只摸摸它", "pet"], ["做个呼吸", "breath"]]
+      };
+    }
+
+    if (/开心|高兴|顺利|喜欢|太好了|完成了|有光/.test(normalized)) {
+      applyChange({ expression: 10, connection: 7, calm: 3 }, "happy", "bright");
+      return {
+        text: "我想听具体一点的那一点光。是哪句话、哪件事，或者谁让你今天比刚才轻了一点？",
+        actions: [["摸摸发光的小映", "pet"]]
+      };
+    }
+
+    if (/夸|鼓励|肯定|棒|厉害/.test(normalized)) {
+      applyChange({ expression: 7, connection: 6, calm: 2 }, "happy", "bright");
+      return {
+        text: "你愿意停下来照顾自己，这本身就很具体。不是因为你今天完成了多少，而是你没有把难受完全丢在一边。",
+        actions: []
+      };
+    }
+
+    if (/谢谢|感谢|谢啦/.test(normalized)) {
+      return {
+        text: "不用客气。你可以随时回来，也可以关掉页面去做现实里更重要的事。",
+        actions: []
+      };
+    }
+
+    if (/你好|在吗|嗨|hello|hi/i.test(normalized)) {
+      return {
+        text: "在。今天不用准备一个完整的故事，从一句近况开始就好。",
+        actions: []
+      };
+    }
+
+    if (/陪我|孤独|没人|一个人/.test(normalized)) {
+      applyChange({ connection: 9, calm: 2 }, "soft");
+      return {
+        text: "我在。虽然我只是网页里的分身，但这一小段时间可以陪你。你想让我安静听着，还是给你一个可以马上做的动作？",
+        actions: [["摸摸小映", "pet"], ["一起呼吸", "breath"]]
+      };
+    }
+
+    const genericReplies = [
+      "我在听。如果把它拆成“发生了什么”和“我此刻最难受的部分”，你会先写哪一半？也可以只说一个词。",
+      "这件事对你来说，最重要的地方是什么？不急着回答得完整，想到哪儿就说到哪儿。",
+      "我先不替你解释。它让你的身体有什么反应吗，比如肩膀紧、胸口闷，还是只想躲开？",
+      "收到。你现在更需要有人听你说，还是需要一个小步骤把眼前的事变小一点？"
+    ];
+    applyChange({ expression: 5, connection: 4, stress: -1 }, "soft");
+    return {
+      text: genericReplies[(chatTurn - 1) % genericReplies.length],
+      actions: [["我想做个小动作", "breath"]]
+    };
+  }
+
+  function sendChatMessage(rawText) {
+    const text = String(rawText || "").trim().slice(0, 280);
+    if (!text) return;
+    appendChatMessage("user", text);
+    chatInput.value = "";
+    chatVoiceStatus.classList.remove("is-error");
+    chatVoiceStatus.textContent = "本次对话只保留在当前页面，刷新后清除";
+    const typing = appendTypingIndicator();
+    const reply = buildChatReply(text);
+    window.setTimeout(() => {
+      typing.remove();
+      appendChatMessage("assistant", reply.text, { actions: reply.actions });
+      speakChatReply(reply.text);
+    }, 520 + Math.min(text.length * 12, 480));
+  }
+
+  function resetChat() {
+    stopChatVoice();
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    chatThread.replaceChildren();
+    const day = document.createElement("div");
+    day.className = "chat-day-label";
+    day.textContent = "现在";
+    chatThread.appendChild(day);
+    appendChatMessage(
+      "assistant",
+      "我在这里。你可以说说刚刚发生了什么，也可以只告诉我现在想被怎么陪着。",
+      { actions: [["摸摸小映", "pet"], ["陪我呼吸", "breath"]] }
+    );
+    chatTurn = 0;
+    chatVoiceStatus.classList.remove("is-error");
+    chatVoiceStatus.textContent = "语音输入不会保存录音，是否联网由浏览器决定";
+    showToast("本次聊天已清空");
+  }
+
+  function stopChatVoice(showNotice = false) {
+    window.clearTimeout(chatVoiceTimer);
+    chatVoiceTimer = 0;
+    chatMic.classList.remove("is-listening");
+    chatMic.setAttribute("aria-label", "开始语音输入");
+    if (chatVoiceRecognition) {
+      try { chatVoiceRecognition.abort(); } catch { /* no-op */ }
+      chatVoiceRecognition = null;
+    }
+    if (showNotice) {
+      chatVoiceStatus.classList.remove("is-error");
+      chatVoiceStatus.textContent = "已停止语音输入";
+    }
+  }
+
+  function chatVoiceErrorText(code) {
+    const messagesByCode = {
+      "not-allowed": "麦克风权限未开启。请在浏览器网站设置中允许麦克风，或直接使用文字聊天。",
+      "service-not-allowed": "浏览器没有开放语音识别权限，可以直接使用文字聊天。",
+      "audio-capture": "没有检测到可用麦克风，可以直接使用文字聊天。",
+      network: "浏览器语音服务连接失败，请稍后再试或使用文字聊天。",
+      "no-speech": "没有听到清晰语音，你可以再说一次或直接打字。",
+      aborted: "语音输入已停止"
+    };
+    return messagesByCode[code] || "语音识别没有返回结果，可以直接使用文字聊天。";
+  }
+
+  function startChatVoice() {
+    stopChatVoice();
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Recognition) {
+      chatVoiceStatus.classList.add("is-error");
+      chatVoiceStatus.textContent = "当前浏览器不支持语音识别，可以直接使用文字聊天。";
+      chatInput.focus();
+      return;
+    }
+
+    try {
+      chatVoiceTimedOut = false;
+      chatVoiceRecognition = new Recognition();
+      chatVoiceRecognition.lang = "zh-CN";
+      chatVoiceRecognition.interimResults = false;
+      chatVoiceRecognition.continuous = false;
+      chatVoiceRecognition.maxAlternatives = 1;
+      chatMic.classList.add("is-listening");
+      chatMic.setAttribute("aria-label", "正在监听，轻点停止");
+      chatVoiceStatus.classList.remove("is-error");
+      chatVoiceStatus.textContent = "正在听你说。浏览器可能联网处理语音，但本页不会保存录音。";
+
+      chatVoiceRecognition.onstart = () => {
+        chatVoiceStatus.textContent = "正在听，请慢慢说一句话";
+      };
+
+      chatVoiceRecognition.onresult = (event) => {
+        const transcript = event.results?.[0]?.[0]?.transcript?.trim();
+        if (transcript) {
+          chatVoiceStatus.textContent = `听到了：“${transcript}”`;
+          sendChatMessage(transcript);
+        }
+      };
+
+      chatVoiceRecognition.onerror = (event) => {
+        if (chatVoiceTimedOut) return;
+        chatVoiceStatus.classList.add("is-error");
+        chatVoiceStatus.textContent = chatVoiceErrorText(event.error);
+      };
+
+      chatVoiceRecognition.onend = () => {
+        window.clearTimeout(chatVoiceTimer);
+        chatVoiceTimer = 0;
+        chatMic.classList.remove("is-listening");
+        chatMic.setAttribute("aria-label", "开始语音输入");
+        chatVoiceRecognition = null;
+      };
+
+      chatVoiceRecognition.start();
+      chatVoiceTimer = window.setTimeout(() => {
+        if (!chatVoiceRecognition) return;
+        chatVoiceTimedOut = true;
+        chatVoiceStatus.classList.add("is-error");
+        chatVoiceStatus.textContent = "语音识别超时，没有收到结果。可以再说一次，或直接打字。";
+        try { chatVoiceRecognition.abort(); } catch { /* no-op */ }
+        chatVoiceRecognition = null;
+        chatMic.classList.remove("is-listening");
+        chatVoiceTimer = 0;
+      }, 10000);
+    } catch {
+      stopChatVoice();
+      chatVoiceStatus.classList.add("is-error");
+      chatVoiceStatus.textContent = "没有成功启动语音输入，可以直接使用文字聊天。";
+    }
+  }
+
+  function toggleChatVoice() {
+    if (chatVoiceRecognition) {
+      stopChatVoice(true);
+    } else {
+      startChatVoice();
     }
   }
 
@@ -835,7 +1182,10 @@
         const action = button.dataset.action;
         if (action === "pet") performPet("button");
         if (action === "breath") showView("breath");
-        if (action === "voice") openVoiceDialog();
+        if (action === "voice") {
+          showView("chat");
+          startChatVoice();
+        }
         if (action === "motion") {
           if (motionEnabled) {
             showToast("摇一摇手机试试");
@@ -867,6 +1217,26 @@
 
     $("#toggle-breath").addEventListener("click", toggleBreathing);
     $("#start-voice").addEventListener("click", startVoice);
+    $("#chat-mic").addEventListener("click", toggleChatVoice);
+    $("#clear-chat").addEventListener("click", resetChat);
+    $("#chat-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      sendChatMessage(chatInput.value);
+    });
+    $$("[data-chat-prompt]").forEach((button) => {
+      button.addEventListener("click", () => sendChatMessage(button.dataset.chatPrompt));
+    });
+    $("#toggle-read-aloud").addEventListener("click", (event) => {
+      if (!("speechSynthesis" in window)) {
+        showToast("当前浏览器不支持朗读");
+        return;
+      }
+      chatReadAloud = !chatReadAloud;
+      event.currentTarget.setAttribute("aria-pressed", String(chatReadAloud));
+      event.currentTarget.textContent = `朗读 ${chatReadAloud ? "开" : "关"}`;
+      if (!chatReadAloud) window.speechSynthesis.cancel();
+      showToast(chatReadAloud ? "后续回复会使用系统语音朗读" : "已关闭朗读");
+    });
     $("#generate-card").addEventListener("click", () => generateEmotionCard(true));
     $("#download-card").addEventListener("click", () => generateEmotionCard(true));
     $("#open-settings").addEventListener("click", () => settingsDialog.showModal());
@@ -899,19 +1269,24 @@
     window.addEventListener("devicemotion", onDeviceMotion, { passive: true });
     window.addEventListener("hashchange", () => {
       const requested = location.hash.slice(1);
-      if (["home", "breath", "journey"].includes(requested)) showView(requested, false);
+      if (["home", "chat", "breath", "journey"].includes(requested)) showView(requested, false);
     });
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) stopBreathing(false);
+      if (document.hidden) {
+        stopBreathing(false);
+        stopChatVoice();
+      }
     });
   }
 
   function registerServiceWorker() {
     if (!("serviceWorker" in navigator)) return;
     if (location.protocol !== "http:" && location.protocol !== "https:") return;
-    navigator.serviceWorker.register("./sw.js").catch(() => {
-      /* The static page remains usable without offline caching. */
-    });
+    navigator.serviceWorker.register("./sw.js")
+      .then((registration) => registration.update())
+      .catch(() => {
+        /* The static page remains usable without offline caching. */
+      });
   }
 
   function init() {
@@ -932,7 +1307,7 @@
       day: "numeric"
     }).format(new Date());
     const requestedView = location.hash.slice(1);
-    if (["breath", "journey"].includes(requestedView)) showView(requestedView, false);
+    if (["chat", "breath", "journey"].includes(requestedView)) showView(requestedView, false);
     registerServiceWorker();
   }
 
