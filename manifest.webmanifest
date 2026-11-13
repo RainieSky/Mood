@@ -1,0 +1,11 @@
+{
+  "name": "映心 情绪数字分身",
+  "short_name": "映心",
+  "description": "通过触摸、呼吸、语音与手机动作回应用户的移动端情绪数字分身。",
+  "lang": "zh-CN",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f7f1e5",
+  "theme_color": "#f7f1e5",
+  "orientation": "portrait"
+}

@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f1e5">
+  <meta name="description" content="映心是一只会回应用户触摸、语音与动作的移动端情绪数字分身。">
+  <title>映心 情绪数字分身</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="desktop-backdrop" aria-hidden="true">
+    <span></span><span></span><span></span>
+  </div>
+
+  <main class="app-shell">
+    <div class="ambient ambient-a" aria-hidden="true"></div>
+    <div class="ambient ambient-b" aria-hidden="true"></div>
+
+    <section class="view view-home is-active" data-view="home" aria-labelledby="home-title">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <i></i><i></i><i></i>
+          </span>
+          <span>映心 <small>ECHO</small></span>
+        </div>
+        <button class="icon-button" id="open-settings" aria-label="打开设置与说明">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"></path>
+            <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06-1.9 1.9-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V20h-2.68v-.01A1.7 1.7 0 0 0 11.23 18a1.7 1.7 0 0 0-1.87.34l-.06.06-1.9-1.9.06-.06A1.7 1.7 0 0 0 7.8 14.57a1.7 1.7 0 0 0-1.56-1.03H6v-2.68h.24a1.7 1.7 0 0 0 1.56-1.03 1.7 1.7 0 0 0-.34-1.87l-.06-.06 1.9-1.9.06.06a1.7 1.7 0 0 0 1.87.34 1.7 1.7 0 0 0 1.03-1.56V4h2.68v.24a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06 1.9 1.9-.06.06a1.7 1.7 0 0 0-.34 1.87 1.7 1.7 0 0 0 1.56 1.03H20v2.68h-.24A1.7 1.7 0 0 0 18.2 14c-.44.2-.78.57-1.03 1Z"></path>
+          </svg>
+        </button>
+      </header>
+
+      <div class="home-copy">
+        <p class="eyebrow">今天也可以慢一点</p>
+        <h1 id="home-title">它正在感受<br>你此刻的节奏</h1>
+        <p class="privacy-pill">
+          <span class="privacy-dot" aria-hidden="true"></span>
+          本机体验，不会诊断情绪
+        </p>
+      </div>
+
+      <div class="companion-stage" id="companion-stage" role="group" aria-label="可触摸的数字分身小映">
+        <div class="stage-orbit orbit-one" aria-hidden="true"></div>
+        <div class="stage-orbit orbit-two" aria-hidden="true"></div>
+        <div class="pixel-field" id="pixel-field" aria-hidden="true"></div>
+
+        <svg class="companion" id="companion" viewBox="0 0 360 360" role="img" aria-labelledby="companion-title companion-desc">
+          <title id="companion-title">数字分身小映</title>
+          <desc id="companion-desc">一只由柔和光团、眼睛和像素光点组成的数字生命。它会随触摸、呼吸、语音和手机动作改变状态。</desc>
+          <defs>
+            <radialGradient id="auraGradient" cx="50%" cy="48%" r="55%">
+              <stop offset="0%" stop-color="var(--aura-core)" stop-opacity=".95"></stop>
+              <stop offset="60%" stop-color="var(--aura-mid)" stop-opacity=".42"></stop>
+              <stop offset="100%" stop-color="var(--aura-edge)" stop-opacity="0"></stop>
+            </radialGradient>
+            <linearGradient id="bodyGradient" x1="24%" y1="16%" x2="78%" y2="86%">
+              <stop offset="0%" stop-color="var(--body-light)"></stop>
+              <stop offset="48%" stop-color="var(--body-main)"></stop>
+              <stop offset="100%" stop-color="var(--body-deep)"></stop>
+            </linearGradient>
+            <linearGradient id="bellyGradient" x1="30%" y1="10%" x2="70%" y2="90%">
+              <stop offset="0%" stop-color="#fffdf3" stop-opacity=".9"></stop>
+              <stop offset="100%" stop-color="#fff8d8" stop-opacity=".08"></stop>
+            </linearGradient>
+            <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="17"></feGaussianBlur>
+            </filter>
+            <filter id="bodyShadow" x="-30%" y="-30%" width="160%" height="180%">
+              <feDropShadow dx="0" dy="20" stdDeviation="17" flood-color="#5a766b" flood-opacity=".23"></feDropShadow>
+            </filter>
+          </defs>
+
+          <circle cx="180" cy="177" r="151" fill="url(#auraGradient)" filter="url(#softGlow)" class="aura"></circle>
+          <g class="pixel-stars" aria-hidden="true">
+            <rect x="62" y="100" width="7" height="7" rx="1.5"></rect>
+            <rect x="287" y="83" width="5" height="5" rx="1"></rect>
+            <rect x="300" y="173" width="8" height="8" rx="2"></rect>
+            <rect x="72" y="241" width="6" height="6" rx="1.5"></rect>
+            <rect x="258" y="268" width="4" height="4" rx="1"></rect>
+            <rect x="121" y="61" width="4" height="4" rx="1"></rect>
+          </g>
+          <g class="companion-body" id="companion-body" filter="url(#bodyShadow)">
+            <path class="body-shape" d="M180 65c50 0 90 23 107 68 17 46 3 96-30 127-34 32-89 48-137 29-46-18-80-63-75-111 5-50 37-91 83-107 17-6 34-6 52-6Z" fill="url(#bodyGradient)"></path>
+            <path class="body-light" d="M128 91c16-15 39-23 62-22 19 1 38 7 50 20-17 2-32 12-43 25-15 18-34 28-57 27-19-1-37 6-49 20 1-27 14-53 37-70Z" fill="url(#bellyGradient)"></path>
+            <ellipse class="cheek cheek-left" cx="113" cy="199" rx="24" ry="11"></ellipse>
+            <ellipse class="cheek cheek-right" cx="250" cy="199" rx="24" ry="11"></ellipse>
+            <g class="face">
+              <g class="eye eye-left">
+                <ellipse cx="136" cy="163" rx="13" ry="17" fill="#20342e"></ellipse>
+                <circle cx="141" cy="157" r="4" fill="#fffdf4"></circle>
+              </g>
+              <g class="eye eye-right">
+                <ellipse cx="224" cy="163" rx="13" ry="17" fill="#20342e"></ellipse>
+                <circle cx="229" cy="157" r="4" fill="#fffdf4"></circle>
+              </g>
+              <path class="mouth mouth-calm" d="M168 205c8 7 17 7 25 0"></path>
+              <path class="mouth mouth-soft" d="M171 207c7-4 14-4 21 0"></path>
+              <path class="mouth mouth-o" d="M180 203c5 0 9 4 9 9s-4 9-9 9-9-4-9-9 4-9 9-9Z"></path>
+            </g>
+            <g class="arms" aria-hidden="true">
+              <path class="arm arm-left" d="M91 202c-22 2-30 20-19 32 10 11 26 4 31-13"></path>
+              <path class="arm arm-right" d="M269 202c22 2 30 20 19 32-10 11-26 4-31-13"></path>
+            </g>
+            <g class="feet" aria-hidden="true">
+              <ellipse cx="142" cy="281" rx="29" ry="13"></ellipse>
+              <ellipse cx="218" cy="281" rx="29" ry="13"></ellipse>
+            </g>
+          </g>
+        </svg>
+
+        <div class="companion-message" id="companion-message" aria-live="polite">
+          <span class="message-kicker" id="state-label">安静地亮着</span>
+          <span id="message-text">摸摸我，或者陪我呼吸一会儿。</span>
+        </div>
+      </div>
+
+      <div class="state-readout" aria-label="小映当前状态">
+        <div>
+          <span class="readout-value" id="calm-value">72</span>
+          <span class="readout-label">安定</span>
+        </div>
+        <div>
+          <span class="readout-value" id="connection-value">45</span>
+          <span class="readout-label">联结</span>
+        </div>
+        <div>
+          <span class="readout-value" id="energy-value">58</span>
+          <span class="readout-label">电量</span>
+        </div>
+      </div>
+
+      <div class="action-dock" aria-label="与小映互动">
+        <button class="action-button" data-action="pet">
+          <span class="action-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M8.2 11V6.7a1.6 1.6 0 0 1 3.2 0v3.2-5a1.6 1.6 0 0 1 3.2 0v5-3.4a1.6 1.6 0 0 1 3.2 0v4-2a1.5 1.5 0 0 1 3 0v5.1c0 4.4-2.9 7.4-7.2 7.4h-1.1a6.8 6.8 0 0 1-5.4-2.7l-2.7-3.5a1.7 1.7 0 0 1 2.4-2.4l1.4 1.2"></path></svg>
+          </span>
+          <span>抚摸</span>
+        </button>
+        <button class="action-button" data-action="breath">
+          <span class="action-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 9.3h9.1a2.8 2.8 0 1 0-2.6-3.7"></path><path d="M4 13h13.4a3 3 0 1 1-2.8 4"></path><path d="M4 16.7h6.2"></path></svg>
+          </span>
+          <span>呼吸</span>
+        </button>
+        <button class="action-button" data-action="voice">
+          <span class="action-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"></path></svg>
+          </span>
+          <span>说话</span>
+        </button>
+        <button class="action-button" data-action="motion">
+          <span class="action-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M8 7.2a5.8 5.8 0 0 1 8 0M5.3 4.5a9.5 9.5 0 0 1 13.4 0M10.7 10.1a3.1 3.1 0 0 1 2.6 0"></path><circle cx="12" cy="14.5" r="1.6"></circle><path d="M7.4 19.5c2.8 1.7 6.4 1.7 9.2 0"></path></svg>
+          </span>
+          <span>轻摇</span>
+        </button>
+      </div>
+
+      <section class="checkin-card" aria-labelledby="checkin-title">
+        <div class="section-heading compact">
+          <div>
+            <p class="eyebrow">只用十秒</p>
+            <h2 id="checkin-title">此刻更像哪一种？</h2>
+          </div>
+          <span class="local-tag">不上传</span>
+        </div>
+        <div class="mood-options" role="group" aria-label="选择此刻的感受">
+          <button class="mood-chip" data-mood="low"><span class="mood-face">◡</span><span>有点低</span></button>
+          <button class="mood-chip is-selected" data-mood="calm"><span class="mood-face">•ᴗ•</span><span>还算稳</span></button>
+          <button class="mood-chip" data-mood="bright"><span class="mood-face">✦‿✦</span><span>有光</span></button>
+        </div>
+      </section>
+
+      <p class="gentle-note">
+        映心不是医生，也不判断你的情绪。它只把抽象感受变成可回应、可练习的陪伴对象。
+      </p>
+    </section>
+
+    <section class="view view-breath" data-view="breath" aria-labelledby="breath-title">
+      <header class="subpage-header">
+        <button class="back-home icon-button" aria-label="返回分身">
+          <svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"></path></svg>
+        </button>
+        <span>一起呼吸</span>
+        <span class="header-spacer"></span>
+      </header>
+
+      <div class="subpage-title">
+        <p class="eyebrow">跟随光团，不必做得完美</p>
+        <h1 id="breath-title">给身体一个<br>慢下来的信号</h1>
+      </div>
+
+      <div class="breath-practice">
+        <div class="breath-rings" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="breath-orb" id="breath-orb">
+          <span class="breath-phase" id="breath-phase">准备好时</span>
+          <strong id="breath-count">4</strong>
+          <span class="breath-hint" id="breath-hint">轻点开始</span>
+        </div>
+      </div>
+
+      <div class="breath-modes" role="group" aria-label="选择呼吸节奏">
+        <button class="mode-chip is-selected" data-rhythm="4-2-6"><strong>4·2·6</strong><span>舒缓</span></button>
+        <button class="mode-chip" data-rhythm="4-4-4"><strong>4·4·4</strong><span>平衡</span></button>
+        <button class="mode-chip" data-rhythm="3-3-3"><strong>3·3·3</strong><span>短一点</span></button>
+      </div>
+
+      <button class="primary-button" id="toggle-breath">开始一轮呼吸</button>
+      <p class="practice-note" id="practice-note">完成一轮后，小映会记录一次陪伴，并把它画进今天的情绪卡。</p>
+    </section>
+
+    <section class="view view-journey" data-view="journey" aria-labelledby="journey-title">
+      <header class="subpage-header">
+        <button class="back-home icon-button" aria-label="返回分身">
+          <svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"></path></svg>
+        </button>
+        <span>今日轨迹</span>
+        <button class="icon-button" id="download-card" aria-label="下载今日情绪卡">
+          <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"></path></svg>
+        </button>
+      </header>
+
+      <div class="subpage-title journey-title">
+        <p class="eyebrow">只保留你愿意留下的</p>
+        <h1 id="journey-title">变化不必很大<br>也算在向前</h1>
+      </div>
+
+      <section class="insight-card" aria-labelledby="insight-title">
+        <div class="card-topline">
+          <span>本次体验</span>
+          <span id="session-date">今天</span>
+        </div>
+        <h2 id="insight-title">小映的呼吸变稳了</h2>
+        <p id="insight-copy">你还没有开始互动。摸一摸小映，或完成一轮呼吸，这里会留下只属于本次体验的轨迹。</p>
+        <div class="mini-chart" id="mini-chart" aria-label="安定、联结、电量、表达的变化">
+          <div class="chart-column"><span style="--h:58%"></span><small>电量</small></div>
+          <div class="chart-column"><span style="--h:45%"></span><small>联结</small></div>
+          <div class="chart-column"><span style="--h:32%"></span><small>压力</small></div>
+          <div class="chart-column"><span style="--h:72%"></span><small>安定</small></div>
+          <div class="chart-column"><span style="--h:24%"></span><small>表达</small></div>
+        </div>
+      </section>
+
+      <section class="memory-section" aria-labelledby="memory-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">刚刚发生</p>
+            <h2 id="memory-title">小映记住了什么</h2>
+          </div>
+          <span class="local-tag">本机</span>
+        </div>
+        <div class="memory-list" id="memory-list">
+          <div class="empty-memory">
+            <span aria-hidden="true">＋</span>
+            <p>一次触摸、一次呼吸，都会成为这里的一颗小光点。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="signature-card" aria-labelledby="signature-title">
+        <div class="signature-glow" aria-hidden="true"></div>
+        <p class="eyebrow">生成式回礼</p>
+        <h2 id="signature-title">把这次相处<br>变成一张卡</h2>
+        <p id="card-copy">小映会根据本次互动生成一张抽象视觉卡。图像在手机本地绘制，不上传。</p>
+        <button class="secondary-button" id="generate-card">生成今日情绪卡</button>
+      </section>
+    </section>
+
+    <nav class="tabbar" aria-label="主要页面">
+      <button class="tab is-active" data-target="home" aria-label="分身">
+        <svg viewBox="0 0 24 24"><path d="M12 21c5 0 8-3 8-8 0-4-2.5-7-6-8.5V3H10v1.5C6.5 6 4 9 4 13c0 5 3 8 8 8Z"></path><path d="M9 13h.01M15 13h.01M10 16c1.3 1 2.7 1 4 0"></path></svg>
+        <span>分身</span>
+      </button>
+      <button class="tab" data-target="breath" aria-label="呼吸">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2"></path></svg>
+        <span>呼吸</span>
+      </button>
+      <button class="tab" data-target="journey" aria-label="轨迹">
+        <svg viewBox="0 0 24 24"><path d="M5 19V7m7 12V4m7 15v-8"></path><path d="M3 19h18"></path></svg>
+        <span>轨迹</span>
+      </button>
+    </nav>
+  </main>
+
+  <dialog class="voice-dialog" id="voice-dialog">
+    <div class="dialog-header">
+      <div>
+        <p class="eyebrow">对小映说一句话</p>
+        <h2>它会把语气<br>变成一束光</h2>
+      </div>
+      <button class="icon-button close-dialog" data-close="voice-dialog" aria-label="关闭语音面板">
+        <svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="voice-visual" id="voice-visual" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span>
+      <i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+    <p class="voice-status" id="voice-status">点击下方按钮开始。原型不会把语音内容保存在服务器。</p>
+    <button class="primary-button" id="start-voice">开始说话</button>
+    <p class="prototype-note">如浏览器支持语音识别，会显示临时识别文本；不支持时进入交互演示。</p>
+  </dialog>
+
+  <dialog class="settings-dialog" id="settings-dialog">
+    <div class="dialog-header">
+      <div>
+        <p class="eyebrow">体验说明</p>
+        <h2>关于映心</h2>
+      </div>
+      <button class="icon-button close-dialog" data-close="settings-dialog" aria-label="关闭设置">
+        <svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="settings-copy">
+      <p>“映心”是一个移动端交互原型。它把触摸、语音、手机动作与呼吸练习转化为数字分身的状态变化，用于探索“互动本身也能帮助调节”的体验闭环。</p>
+      <p>原型中的状态是规则与演示数据，不构成心理诊断或医疗建议。如果持续感到难以承受，应联系可信任的人或专业支持。</p>
+    </div>
+    <div class="settings-row">
+      <div>
+        <strong>体感互动</strong>
+        <span id="motion-status">尚未开启</span>
+      </div>
+      <button class="small-button" id="enable-motion">开启</button>
+    </div>
+    <div class="settings-row">
+      <div>
+        <strong>本地记录</strong>
+        <span id="storage-status">仅保存在此浏览器</span>
+      </div>
+      <button class="small-button danger" id="clear-storage">清除</button>
+    </div>
+    <p class="dialog-footnote">页面关闭后，本机记录仍会保留；清除浏览器数据也会删除这些记录。</p>
+    <button class="primary-button" data-close="settings-dialog">继续陪伴</button>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <canvas id="card-canvas" width="1080" height="1440" hidden></canvas>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
