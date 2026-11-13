@@ -12,6 +12,13 @@ npx wrangler login
 npm run deploy
 ```
 
+也可以直接在 GitHub 仓库设置以下 Actions Secrets，然后运行 `Deploy chat proxy` 工作流：
+
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+
+API Token 只需要 Workers Scripts 与 Workers AI 的相关权限。不要把这些值写进代码或发送到聊天中。
+
 2. Wrangler 会输出类似下面的地址：
 
 ```text
