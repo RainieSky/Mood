@@ -3,6 +3,7 @@ const CORE_FILES = [
   "./",
   "./index.html",
   "./styles.css",
+  "./chat-config.js",
   "./app.js",
   "./manifest.webmanifest"
 ];

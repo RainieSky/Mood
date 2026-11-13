@@ -2,6 +2,9 @@
   "use strict";
 
   const STORAGE_KEY = "yingxin-demo-v1";
+  const chatConfig = window.YINGXIN_CHAT_CONFIG || {};
+  const chatEndpoint = String(chatConfig.endpoint || "").trim();
+  const chatHistoryLimit = Math.max(2, Math.min(Number(chatConfig.maxHistoryMessages) || 10, 20));
   const today = new Date();
   const dateKey = [
     today.getFullYear(),
@@ -103,6 +106,9 @@
   let chatVoiceTimedOut = false;
   let chatReadAloud = false;
   let chatTurn = 0;
+  let chatHistory = [];
+  let chatBusy = false;
+  let chatGeneration = 0;
   let motionEnabled = false;
   let lastShake = 0;
   let activeRhythm = [4, 2, 6];
@@ -126,6 +132,8 @@
   const chatInput = $("#chat-input");
   const chatMic = $("#chat-mic");
   const chatVoiceStatus = $("#chat-voice-status");
+  const chatModelBadge = $("#chat-model-badge");
+  const chatPrivacyCopy = $("#chat-privacy-copy");
   const toast = $("#toast");
 
   function saveState() {
@@ -573,6 +581,45 @@
     window.speechSynthesis.speak(utterance);
   }
 
+  function updateChatBackendStatus() {
+    if (chatEndpoint) {
+      chatModelBadge.textContent = chatConfig.modelLabel || "云端模型";
+      chatPrivacyCopy.textContent = "最近对话会发送到云端模型生成回复，本页不保存历史";
+      $("#chat-disclaimer").textContent = "小映由云端中文模型生成回复，不是真人或心理医生。对话不会保存在本网站；若你可能有伤害自己的风险，请立即联系身边可信任的人、学校心理中心，或拨打 120 / 110 寻求紧急帮助。";
+    } else {
+      chatModelBadge.textContent = "本地回应";
+      chatPrivacyCopy.textContent = "对话只留在当前页面，刷新即清除";
+      $("#chat-disclaimer").textContent = "小映使用本地回应规则，不是真人或心理医生。若你可能有伤害自己的风险，请立即联系身边可信任的人、学校心理中心，或拨打 120 / 110 寻求紧急帮助。";
+    }
+  }
+
+  async function requestCloudReply() {
+    if (!chatEndpoint) return null;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 18000);
+    try {
+      const response = await fetch(chatEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: chatHistory.slice(-chatHistoryLimit)
+        }),
+        signal: controller.signal
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      const reply = String(data.reply || "").trim();
+      if (!reply) throw new Error("Empty reply");
+      return reply.slice(0, 1200);
+    } catch {
+      chatVoiceStatus.classList.add("is-error");
+      chatVoiceStatus.textContent = "云端模型暂时没有连上，已切换为本地陪伴";
+      return null;
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  }
+
   function buildChatReply(text) {
     const normalized = text.replace(/\s/g, "");
     chatTurn += 1;
@@ -672,20 +719,47 @@
     };
   }
 
-  function sendChatMessage(rawText) {
+  async function sendChatMessage(rawText) {
     const text = String(rawText || "").trim().slice(0, 280);
     if (!text) return;
+    if (chatBusy) {
+      showToast("等小映把上一句说完");
+      return;
+    }
+    chatBusy = true;
+    const currentGeneration = ++chatGeneration;
     appendChatMessage("user", text);
+    chatHistory.push({ role: "user", content: text });
     chatInput.value = "";
     chatVoiceStatus.classList.remove("is-error");
     chatVoiceStatus.textContent = "本次对话只保留在当前页面，刷新后清除";
     const typing = appendTypingIndicator();
-    const reply = buildChatReply(text);
-    window.setTimeout(() => {
+    const crisisInput = /自杀|不想活|伤害自己|结束生命|死了算了|活不下去/.test(text.replace(/\s/g, ""));
+    try {
+      if (chatEndpoint && !crisisInput) {
+        const cloudReply = await requestCloudReply();
+        if (cloudReply) {
+          if (currentGeneration !== chatGeneration) return;
+          typing.remove();
+          appendChatMessage("assistant", cloudReply);
+          chatHistory.push({ role: "assistant", content: cloudReply });
+          chatHistory = chatHistory.slice(-chatHistoryLimit);
+          speakChatReply(cloudReply);
+          return;
+        }
+      }
+
+      await wait(520 + Math.min(text.length * 12, 480));
+      if (currentGeneration !== chatGeneration) return;
+      const reply = buildChatReply(text);
       typing.remove();
       appendChatMessage("assistant", reply.text, { actions: reply.actions });
+      chatHistory.push({ role: "assistant", content: reply.text });
+      chatHistory = chatHistory.slice(-chatHistoryLimit);
       speakChatReply(reply.text);
-    }, 520 + Math.min(text.length * 12, 480));
+    } finally {
+      chatBusy = false;
+    }
   }
 
   function resetChat() {
@@ -702,8 +776,13 @@
       { actions: [["摸摸小映", "pet"], ["陪我呼吸", "breath"]] }
     );
     chatTurn = 0;
+    chatHistory = [];
+    chatBusy = false;
+    chatGeneration += 1;
     chatVoiceStatus.classList.remove("is-error");
-    chatVoiceStatus.textContent = "语音输入不会保存录音，是否联网由浏览器决定";
+    chatVoiceStatus.textContent = chatEndpoint
+      ? "语音输入不会保存录音；聊天上下文会发送到云端模型"
+      : "语音输入不会保存录音，是否联网由浏览器决定";
     showToast("本次聊天已清空");
   }
 
@@ -1290,6 +1369,7 @@
   }
 
   function init() {
+    updateChatBackendStatus();
     state.selectedMood = state.selectedMood || "calm";
     state.mood = state.mood || state.selectedMood;
     const copy = messages[state.mood] || messages.calm;

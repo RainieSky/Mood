@@ -1,0 +1,10 @@
+name = "yingxin-chat-proxy"
+main = "src/index.js"
+compatibility_date = "2026-11-13"
+workers_dev = true
+
+[ai]
+binding = "AI"
+
+[vars]
+MODEL = "@cf/qwen/qwen3-30b-a3b-fp8"

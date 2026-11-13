@@ -1333,6 +1333,8 @@ h2 {
 }
 
 #chat-voice-status {
+  min-width: 0;
+  flex: 1;
   color: var(--muted);
   font-size: 8px;
   line-height: 1.45;
@@ -1340,6 +1342,16 @@ h2 {
 
 #chat-voice-status.is-error {
   color: #9a4d3d;
+}
+
+.chat-model-badge {
+  flex: none;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #eef5e8;
+  color: var(--mint-deep);
+  font-size: 8px;
+  font-weight: 700;
 }
 
 .read-toggle {
@@ -1722,6 +1734,22 @@ dialog[open] {
 
   .breath-orb strong {
     font-size: 60px;
+  }
+
+  .view-chat.is-active {
+    min-height: 580px;
+  }
+
+  .chat-heading {
+    padding-top: 14px;
+  }
+
+  .chat-heading h1 {
+    font-size: 29px;
+  }
+
+  .chat-disclaimer {
+    display: none;
   }
 }
 

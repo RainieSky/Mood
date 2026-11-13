@@ -296,7 +296,7 @@
 
       <div class="chat-privacy-strip">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V8a5 5 0 0 1 10 0v2M5 10h14v10H5z"></path></svg>
-        <span>对话只留在当前页面，刷新即清除</span>
+        <span id="chat-privacy-copy">对话只留在当前页面，刷新即清除</span>
       </div>
 
       <div class="chat-thread" id="chat-thread" role="log" aria-live="polite" aria-label="与小映的聊天记录">
@@ -319,6 +319,7 @@
 
       <div class="chat-voice-row">
         <span id="chat-voice-status" role="status">语音输入不会保存录音，是否联网由浏览器决定</span>
+        <span class="chat-model-badge" id="chat-model-badge">本地回应</span>
         <button type="button" class="read-toggle" id="toggle-read-aloud" aria-pressed="false">
           朗读 关
         </button>
@@ -337,7 +338,7 @@
           </button>
         </form>
       </div>
-      <p class="chat-disclaimer">小映使用本地回应规则，不是真人或心理医生。若你可能有伤害自己的风险，请立即联系身边可信任的人、学校心理中心，或拨打 120 / 110 寻求紧急帮助。</p>
+      <p class="chat-disclaimer" id="chat-disclaimer">小映使用本地回应规则，不是真人或心理医生。若你可能有伤害自己的风险，请立即联系身边可信任的人、学校心理中心，或拨打 120 / 110 寻求紧急帮助。</p>
     </section>
 
     <nav class="tabbar" aria-label="主要页面">
@@ -415,6 +416,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <canvas id="card-canvas" width="1080" height="1440" hidden></canvas>
 
+  <script src="chat-config.js" defer></script>
   <script src="app.js" defer></script>
 </body>
 </html>

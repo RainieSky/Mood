@@ -1,0 +1,40 @@
+# 映心聊天代理
+
+这是一个部署到 Cloudflare Workers 的轻量聊天代理。代理使用 Workers AI 中的 Qwen3 中文模型，前端不接触模型密钥，也不保存聊天记录。
+
+## 部署
+
+1. 安装 Node.js 后，在 `worker` 目录运行：
+
+```powershell
+npm install
+npx wrangler login
+npm run deploy
+```
+
+2. Wrangler 会输出类似下面的地址：
+
+```text
+https://yingxin-chat-proxy.<your-subdomain>.workers.dev
+```
+
+3. 在项目根目录的 `chat-config.js` 中填写接口地址：
+
+```js
+window.YINGXIN_CHAT_CONFIG = Object.freeze({
+  endpoint: "https://yingxin-chat-proxy.<your-subdomain>.workers.dev",
+  modelLabel: "Qwen 云端模型",
+  fallbackToLocal: true,
+  maxHistoryMessages: 10
+});
+```
+
+4. 提交并推送 `chat-config.js`，GitHub Pages 更新后即可使用。
+
+## 免费额度与隐私
+
+- 使用 Cloudflare Workers AI 时，免费额度和可用模型以 Cloudflare 账户当前条款为准。
+- Worker 不写入数据库，也不主动记录聊天正文。
+- 浏览器只发送最近 10 条对话到代理，代理再发送给 Workers AI 生成回复。
+- 语音识别由浏览器提供，页面不保存录音。
+- 代理限制来源域名、消息数量、单条长度和总长度，免费额度用尽时前端自动回退到本地回应。
