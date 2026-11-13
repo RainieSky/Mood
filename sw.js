@@ -1,4 +1,4 @@
-const CACHE_NAME = "yingxin-v4";
+const CACHE_NAME = "yingxin-v5";
 const CORE_FILES = [
   "./",
   "./index.html",

@@ -119,8 +119,14 @@ export default {
         200,
         origin
       );
-    } catch {
-      return jsonResponse({ error: "Model unavailable" }, 502, origin);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      console.error("Workers AI request failed", detail.slice(0, 300));
+      return jsonResponse(
+        { error: "Model unavailable", detail: detail.slice(0, 300) },
+        502,
+        origin
+      );
     }
   }
 };

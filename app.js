@@ -606,12 +606,17 @@
         }),
         signal: controller.signal
       });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok) {
+        const detail = await response.text();
+        console.error("Cloud chat request failed", response.status, detail);
+        throw new Error(`HTTP ${response.status}`);
+      }
       const data = await response.json();
       const reply = String(data.reply || "").trim();
       if (!reply) throw new Error("Empty reply");
       return reply.slice(0, 1200);
-    } catch {
+    } catch (error) {
+      console.error("Cloud chat unavailable", error);
       chatVoiceStatus.classList.add("is-error");
       chatVoiceStatus.textContent = "云端模型暂时没有连上，已切换为本地陪伴";
       return null;
