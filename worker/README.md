@@ -19,17 +19,17 @@ npm run deploy
 
 API Token 只需要 Workers Scripts 与 Workers AI 的相关权限。不要把这些值写进代码或发送到聊天中。
 
-2. Wrangler 会输出类似下面的地址：
+2. 当前部署地址：
 
 ```text
-https://yingxin-chat-proxy.<your-subdomain>.workers.dev
+https://dry-bonus-fbc1.xiaoshabi328.workers.dev/
 ```
 
-3. 在项目根目录的 `chat-config.js` 中填写接口地址：
+3. 在项目根目录的 `chat-config.js` 中使用这个地址：
 
 ```js
 window.YINGXIN_CHAT_CONFIG = Object.freeze({
-  endpoint: "https://yingxin-chat-proxy.<your-subdomain>.workers.dev",
+  endpoint: "https://dry-bonus-fbc1.xiaoshabi328.workers.dev/",
   modelLabel: "Qwen 云端模型",
   fallbackToLocal: true,
   maxHistoryMessages: 10
